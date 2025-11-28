@@ -60,10 +60,10 @@ model=tf.keras.models.Sequential([
 
 print(model.summary())
 
-'''model.compile(loss='categorical_crossentropy',optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy',optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), metrics=['accuracy'])
 model.fit(training_images, validation_data=validation_augmented_images,epochs=45)
 model.save('RPSModel.h5')
-'''
+
 
 '''model=load_model('P:\RockPaperScissor-mini project\\venv\RPSModel.h5')
 test_img='dataset\\test'
@@ -84,4 +84,5 @@ for image in image_directory[55:75]:
     if predicted_class==training_images.class_indices['rock']:
         print("Rock")
     plt.imshow(im2.astype('uint8'), cmap='gray')
+
     pyplot.show()'''
