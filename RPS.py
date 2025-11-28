@@ -6,7 +6,7 @@ import random
 import time
 
 class rps():
-    def __init__(self):
+    def __init__(self): #Initialising parameters
         self.model = load_model("venv\RPSModel.h5")
         self.class_names = ["paper", "rock", "scissors"]
         self.mp_hands = mp.hands
@@ -21,33 +21,33 @@ class rps():
         self.prev_round_time=0
         self.curr_round=1
 
-    def score(self, label, frame):
+    def score(self, label, frame): #Scoring function
         display_text=''
         comp_text=''
-        if self.gamestate and time.time()-self.prev_round_time>self.timeframe:
-            if label:
+        if self.gamestate and time.time()-self.prev_round_time>self.timeframe: #If gamestate is true and if the the time elapsed is greater than the set timeframe for each round.
+            if label: #Checking if the model has predicted the detected hand
                 self.prev_round_time=time.time()
-                comp_choice=random.choice(self.class_names)
+                comp_choice=random.choice(self.class_names) #Computer's choice from ["paper", "rock", "scissors"]
                 if label==comp_choice:
                     display_text='Tie!'
-                    #comp_text=comp_choice
                     pass
+                    
                 if label=='rock' and comp_choice=='scissors' or label=='paper' and comp_choice=='rock' \
                       or label=='scissors' and comp_choice=='paper':
                     self.player_score+=1
                     display_text='Player wins!'
-                    #comp_text=comp_choice
+                    
                 else:
                     self.comp_score+=1
                     display_text='Computer wins!'
-                    #comp_text=comp_choice
+                
                 self.curr_round+=1
                 comp_text=comp_choice
 
         if time.time()-self.prev_round_time>1:
             display_text='Progressing to next round'
-           # self.gamestate=False
-
+           
+        #Displaying score info 
         cv2.putText(frame, f'Computer Score: {self.comp_score}  Player Score: {self.player_score}', (10,30),
                              cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
         cv2.putText(frame, display_text, (10,70),
@@ -56,7 +56,8 @@ class rps():
                              cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,255), 2)
         #cv2.putText(frame, f'Time elapsed: {time.time()-self.prev_round_time}', (300,40),
          #                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,255), 2)
-                
+
+        #Setting gamestate to end if rounds have reached the set number of rounds
         if self.curr_round>=self.nrounds:
             self.gamestate=False
             if self.player_score>self.comp_score:
@@ -67,6 +68,8 @@ class rps():
                              cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,0,0), 3)
             
             #self.release()
+
+    #Function to capture frames from the webcam and predict in real time
     def main(self):
         while True:
             ret, frame = self.cap.read()
@@ -84,14 +87,16 @@ class rps():
                     x_min, x_max = max(min(xl)-20,0), min(max(xl)+20,w)
                     y_min, y_max = max(min(yl)-20,0), min(max(yl)+20,h)
 
-                    roi = frame[y_min:y_max, x_min:x_max]
+                    roi = frame[y_min:y_max, x_min:x_max] #Setting region of interest in the frame (the hand) 
 
                     try:
+                        #Resizing the reshaping the roi to feed into the model for prediction
                         gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
                         resized = cv2.resize(gray, (180, 180))
                         normalized = resized / 255.0
                         reshaped = np.reshape(normalized, (1, 180, 180, 1))
 
+                        #Predicting the gesture
                         predict = self.model.predict(reshaped)
                         label_idx = np.argmax(predict, axis=1)[0]
                         label=self.class_names[label_idx]
@@ -99,12 +104,16 @@ class rps():
                     except Exception as e:
                          print("Error:", e)
                          continue
-                    
+                        
+                    #Drawing hand-landmarks
                     self.mp_drawing.draw_landmarks(frame,lm,self.mp_hands.HAND_CONNECTIONS)
+                    
                     try:
                         self.score(label, frame)
                     except Exception as e:
                         print("Scoring Error:", e)
+
+                    #Text to show prediction
                     cv2.putText(frame, label, (x_min, y_min-10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
 
@@ -169,4 +178,5 @@ if __name__=="__main__":
                 cv2.putText(frame, f'Computer Score: {self.comp_score}  Player Score: {self.player_score}', (10,30),
                              cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
             
+
             self.gamestate='end'''
