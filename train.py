@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.pyplot as pyplot
 
 training_director="venv\\newdataset\\train"
+validation_images='venv\\newdataset\\val'
 
 training_data_generator = ImageDataGenerator(
     rescale = 1.0/255,
@@ -22,35 +23,38 @@ training_data_generator = ImageDataGenerator(
 training_images=training_data_generator.flow_from_directory(
     training_director,
     target_size=(180,180),
-    color_mode='grayscale'
+    color_mode='grayscale',
+    class_mode='categorical'
 )
 
-validation_data_generator = ImageDataGenerator(rescale = 1.0/255)
-validation_image_directory="venv\\newdataset\\val"
-validation_augmented_images = validation_data_generator.flow_from_directory(
-    validation_image_directory,
+validation_data_generator=ImageDataGenerator(
+    rescale=1.0/255.0,
+    fill_mode='nearest'
+)
+
+validation_augmented_images=validation_data_generator.flow_from_directory(
+    validation_images,
     target_size=(180,180),
-    color_mode='grayscale'
+    color_mode='grayscale',
+    class_mode='categorical'
 )
 
 print(training_images.class_indices)
-print(validation_augmented_images)
-
 
 model=tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(32,(3,3),activation='relu', input_shape=(180,180,1)),
+    tf.keras.layers.Conv2D(32,(1,6),activation='relu', input_shape=(180,180,1)),
     tf.keras.layers.BatchNormalization(),
     tf.keras.layers.MaxPooling2D(2,2),
 
-    tf.keras.layers.Conv2D(64,(3,3), activation='relu'),
+    tf.keras.layers.Conv2D(64,(6,6), activation='relu'),
     tf.keras.layers.BatchNormalization(),
     tf.keras.layers.MaxPooling2D(2,2),
 
-    tf.keras.layers.Conv2D(128,(3,3),activation='relu'),
+    tf.keras.layers.Conv2D(128,(6,6),activation='relu'),
     tf.keras.layers.BatchNormalization(),
     tf.keras.layers.MaxPooling2D(2,2),
 
-    tf.keras.layers.Flatten(),
+    tf.keras.layers.GlobalAveragePooling2D(),
     tf.keras.layers.Dropout(0.3),
 
     tf.keras.layers.Dense(256,activation='relu'),
@@ -61,7 +65,7 @@ model=tf.keras.models.Sequential([
 print(model.summary())
 
 model.compile(loss='categorical_crossentropy',optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), metrics=['accuracy'])
-model.fit(training_images, validation_data=validation_augmented_images,epochs=45)
+model.fit(training_images, validation_data=validation_augmented_images,epochs=50)
 model.save('RPSModel.h5')
 
 
@@ -84,5 +88,15 @@ for image in image_directory[55:75]:
     if predicted_class==training_images.class_indices['rock']:
         print("Rock")
     plt.imshow(im2.astype('uint8'), cmap='gray')
-
-    pyplot.show()'''
+    pyplot.show()
+    
+    validation_data_generator = ImageDataGenerator(rescale = 1.0/255)
+validation_image_directory="venv\\newdataset\\val"
+validation_augmented_images = validation_data_generator.flow_from_directory(
+    validation_image_directory,
+    target_size=(180,180),
+    color_mode='grayscale'
+)
+print(validation_augmented_images)
+    
+    '''
