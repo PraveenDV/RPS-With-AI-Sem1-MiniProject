@@ -7,8 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as pyplot
 
-training_director="venv\\newdataset\\train"
-validation_images='venv\\newdataset\\val'
+training_director="dataset\\train"
+validation_images='dataset\\val'
 
 training_data_generator = ImageDataGenerator(
     rescale = 1.0/255,
@@ -99,4 +99,5 @@ validation_augmented_images = validation_data_generator.flow_from_directory(
 )
 print(validation_augmented_images)
     
+
     '''
